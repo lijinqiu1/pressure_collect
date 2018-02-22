@@ -28,7 +28,7 @@ typedef enum Message_Form_Opcode
     Message_Form_Opcode_Send_Battery_Value,     /*发送电池电量*/
 }en_Message_Form_Opcode_t;
 
-
+int8_t Message_Uart_IO_Init(void);
 void Message_Process_Uart(void);
 void Message_Process_Wifi(void);
 void Message_UART_RxCpltCallback(void *handle);

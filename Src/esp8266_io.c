@@ -80,7 +80,6 @@ static void WIFI_Handler(void);
 int8_t ESP8266_IO_Init(void)
 {
   /* Set the WiFi USART configuration parameters */
-  MX_USART1_UART_Init();
  
   /* Once the WiFi UART is intialized, start an asynchrounous recursive 
    listening. the HAL_UART_Receive_IT() call below will wait until one char is
@@ -89,6 +88,9 @@ int8_t ESP8266_IO_Init(void)
   WiFiRxBuffer.head = 0;
   WiFiRxBuffer.tail = 0;
  
+  /* Set the RST IO high */
+  HAL_GPIO_WritePin(WIFI_RST_GPIO_Port, WIFI_RES_Pin, GPIO_PIN_SET);
+  
   HAL_UART_Receive_IT(&WiFiUartHandle, (uint8_t *)&WiFiRxBuffer.data[WiFiRxBuffer.tail], 1);
 
   return 0;
@@ -128,6 +130,27 @@ int8_t ESP8266_IO_Send(uint8_t* pData, uint32_t Length)
   return 0;
 }
 
+int32_t ESP8266_IO_Receive_Data(uint8_t* Buffer, uint32_t Length)
+{
+  uint32_t ReadData = 0;
+    while(WiFiRxBuffer.head != WiFiRxBuffer.tail)
+  {
+    /* serial data available, so return data to user */
+    *Buffer++ = WiFiRxBuffer.data[WiFiRxBuffer.head++];
+    ReadData++;
+    if(ReadData >= Length)
+    {
+        break;
+    }
+    /* check for ring buffer wrap */
+    if (WiFiRxBuffer.head >= RING_BUFFER_SIZE)
+    {
+      /* Ring buffer wrap, so reset head pointer to start of buffer */
+      WiFiRxBuffer.head = 0;
+    }
+  }
+  return ReadData;
+}
 /**
   * @brief  Receive Data from the ESP8266 module over the UART interface.
   *         This function receives data from the  ESP8266 WiFi module, the
@@ -178,7 +201,7 @@ void ESP8266_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
     /* If ring buffer end is reached reset tail pointer to start of buffer */
     if(++WiFiRxBuffer.tail >= RING_BUFFER_SIZE)
     {
-    WiFiRxBuffer.tail = 0;   
+		WiFiRxBuffer.tail = 0;   
     }
 
     HAL_UART_Receive_IT(UartHandle, (uint8_t *)&WiFiRxBuffer.data[WiFiRxBuffer.tail], 1);

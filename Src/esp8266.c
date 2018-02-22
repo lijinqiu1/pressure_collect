@@ -57,12 +57,14 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+uint8_t Serial_Net_flag = 0;  //进入透传模式
 static uint8_t AtCmd[MAX_AT_CMD_SIZE];
 uint8_t RxBuffer[MAX_BUFFER_SIZE];
 
 /* Private function prototypes -----------------------------------------------*/
 static ESP8266_StatusTypeDef runAtCmd(uint8_t* cmd, uint32_t Length, const uint8_t* Token);
 static ESP8266_StatusTypeDef getData(uint8_t* Buffer, uint32_t Length, uint32_t* RetLength);
+static ESP8266_StatusTypeDef ESP8266_Leave_Mode_One(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -173,7 +175,10 @@ ESP8266_StatusTypeDef ESP8266_Restart(void)
 ESP8266_StatusTypeDef ESP8266_JoinAccessPoint(uint8_t* Ssid, uint8_t* Password)
 {
   ESP8266_StatusTypeDef Ret;
-
+  if (Serial_Net_flag == 1)
+  {
+    ESP8266_Leave_Mode_One();
+  }
   /* List all the available Access points first
    then check whether the specified 'ssid' exists among them or not.*/
   memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
@@ -193,6 +198,10 @@ ESP8266_StatusTypeDef ESP8266_JoinAccessPoint(uint8_t* Ssid, uint8_t* Password)
 ESP8266_StatusTypeDef ESP8266_QuitAccessPoint(void)
 {
   ESP8266_StatusTypeDef Ret;
+  if (Serial_Net_flag == 1)
+  {
+    ESP8266_Leave_Mode_One();
+  }
   
   /* Construct the CWQAP command */
   memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
@@ -215,6 +224,10 @@ ESP8266_StatusTypeDef ESP8266_GetIPAddress(ESP8266_ModeTypeDef Mode, uint8_t* Ip
 {
   ESP8266_StatusTypeDef Ret = ESP8266_OK;
   char *Token, *temp;
+  if (Serial_Net_flag == 1)
+  {
+    ESP8266_Leave_Mode_One();
+  }
   
   /* Initialize the IP address and command fields */
   strcpy((char *)IpAddress, "0.0.0.0");
@@ -263,9 +276,14 @@ ESP8266_StatusTypeDef ESP8266_EstablishConnection(const ESP8266_ConnectionInfoTy
     return ESP8266_ERROR;
   }
   
+  if (Serial_Net_flag == 1)
+  {
+    ESP8266_Leave_Mode_One();
+  }
+  
   /* Construct the CIPSTART command */
   memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
-  sprintf((char *)AtCmd, "AT+CIPSTART=\"TCP\",\"%s\",%lu%c%c", (char *)connection_info->ipAddress, connection_info->port,'\r', '\n');
+  sprintf((char *)AtCmd, "AT+CIPSTART=\"TCP\",\"%s\",%s%c%c", (char *)connection_info->ipAddress, connection_info->port,'\r', '\n');
   
   /* Send the CIPSTART command */  
   Ret = runAtCmd(AtCmd, strlen((char *)AtCmd), (uint8_t*)AT_OK_STRING);
@@ -283,6 +301,10 @@ ESP8266_StatusTypeDef ESP8266_CloseConnection(const uint8_t channel_id)
 {
   /* Working with a single connection, no channel_id is required */
   ESP8266_StatusTypeDef Ret;
+  if (Serial_Net_flag == 1)
+  {
+    ESP8266_Leave_Mode_One();
+  }
 
   /* Construct the CIPCLOSE command */
   memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
@@ -306,36 +328,89 @@ ESP8266_StatusTypeDef ESP8266_SendData(uint8_t* Buffer, uint32_t Length)
   
   if (Buffer != NULL)
   {
-    uint32_t tickStart;
-	
-	/* Construct the CIPSEND command */
-    memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
-    sprintf((char *)AtCmd, "AT+CIPSEND=%lu%c%c", Length, '\r', '\n');
-    
-    /* The CIPSEND command doesn't have a return command
-       until the data is actually sent. Thus we check here whether
-       we got the '>' prompt or not. */
-    Ret = runAtCmd(AtCmd, strlen((char *)AtCmd), (uint8_t*)AT_SEND_PROMPT_STRING);
-  
-    /* Return Error */
-    if (Ret != ESP8266_OK)
-	{
-      return ESP8266_ERROR;
-	}
-  
-   /* Wait before sending data. */
-    tickStart = HAL_GetTick();
-    while (HAL_GetTick() - tickStart < 500)
-    {
-    }
+//    uint32_t tickStart;
+//	
+//	/* Construct the CIPSEND command */
+//    memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
+//    sprintf((char *)AtCmd, "AT+CIPSEND=%lu%c%c", Length, '\r', '\n');
+//    
+//    /* The CIPSEND command doesn't have a return command
+//       until the data is actually sent. Thus we check here whether
+//       we got the '>' prompt or not. */
+//    Ret = runAtCmd(AtCmd, strlen((char *)AtCmd), (uint8_t*)AT_SEND_PROMPT_STRING);
+//  
+//    /* Return Error */
+//    if (Ret != ESP8266_OK)
+//	{
+//      return ESP8266_ERROR;
+//	}
+//  
+//   /* Wait before sending data. */
+//    tickStart = HAL_GetTick();
+//    while (HAL_GetTick() - tickStart < 500)
+//    {
+//    }
 
-	/* Send the data */
-	Ret = runAtCmd(Buffer, Length, (uint8_t*)AT_SEND_OK_STRING);
+//	/* Send the data */
+//	Ret = runAtCmd(Buffer, Length, (uint8_t*)AT_SEND_OK_STRING);
+    if (ESP8266_IO_Send(Buffer, Length) < 0)
+    {
+        return ESP8266_ERROR;
+    }
   }
   
   return Ret;
 }
 
+/**
+  * @brief  Send data over the wifi connection.
+  * @param  Buffer: the buffer to send
+  * @param  Length: the Buffer's data size.
+  * @retval Returns ESP8266_OK on success and ESP8266_ERROR otherwise.
+  */
+ESP8266_StatusTypeDef ESP8266_Entery_Moode_One(void)
+{
+    ESP8266_StatusTypeDef Ret = ESP8266_OK;
+    if (Serial_Net_flag == 0)
+    {
+        memset(AtCmd,'\0',MAX_AT_CMD_SIZE);
+        sprintf((char *)AtCmd,"AT+CIPMODE=1%c%c",'\r', '\n');
+        Ret = runAtCmd(AtCmd, strlen((char *)AtCmd), (uint8_t*)AT_OK_STRING);
+            
+        if (Ret != ESP8266_OK)
+        {
+            return ESP8266_ERROR;
+        }
+        
+    	/* Construct the CIPSEND command */
+        memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
+        sprintf((char *)AtCmd, "AT+CIPSEND%c%c", '\r', '\n');
+        
+        /* The CIPSEND command doesn't have a return command
+           until the data is actually sent. Thus we check here whether
+           we got the '>' prompt or not. */
+        Ret = runAtCmd(AtCmd, strlen((char *)AtCmd), (uint8_t*)AT_SEND_MODE_ONE_STRING);
+      
+        /* Return Error */
+        if (Ret != ESP8266_OK)
+    	{
+          return ESP8266_ERROR;
+    	}
+        Serial_Net_flag = 1;
+    }
+  return Ret;
+}
+
+static ESP8266_StatusTypeDef ESP8266_Leave_Mode_One(void)
+{
+    ESP8266_StatusTypeDef Ret = ESP8266_OK;
+ 
+    memset(AtCmd,'\0',MAX_AT_CMD_SIZE);
+    sprintf((char *)AtCmd,"+++");
+    ESP8266_IO_Send(AtCmd, strlen((char *)AtCmd));
+    Serial_Net_flag = 0;
+    return Ret;
+}
 
 /**
   * @brief  receive data over the wifi connection.
@@ -346,10 +421,11 @@ ESP8266_StatusTypeDef ESP8266_SendData(uint8_t* Buffer, uint32_t Length)
   */
 ESP8266_StatusTypeDef ESP8266_ReceiveData(uint8_t* pData, uint32_t Length, uint32_t* RetLength)
 {
-  ESP8266_StatusTypeDef Ret;
+  ESP8266_StatusTypeDef Ret = ESP8266_OK;
   
   /* Receive the data from the host */
-  Ret = getData(pData, Length, RetLength);
+//  Ret = getData(pData, Length, RetLength);
+ * RetLength = ESP8266_IO_Receive_Data(pData,Length);
   
   return Ret;
 }

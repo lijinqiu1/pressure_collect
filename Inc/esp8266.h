@@ -61,6 +61,7 @@
 #define AT_IPD_OK_STRING        "OK\r\n\r\n"
 #define AT_SEND_OK_STRING       "SEND OK\r\n"
 #define AT_SEND_PROMPT_STRING   "OK\r\n>"
+#define AT_SEND_MODE_ONE_STRING "OK\r\n\r\n>"
 #define AT_ERROR_STRING         "ERROR\r\n"
 #define AT_IPD_STRING           "+IPD,"
 
@@ -132,7 +133,7 @@ typedef struct
   ESP8266_ConnectionPolicyTypeDef  connectionMode;  /* For UDP connections only */
   uint8_t                          connectionID;
   uint8_t*                         ipAddress;
-  uint32_t                         port;
+  uint8_t*                         port;
   uint32_t                         localPort;       /* for UDP connection only */
   ESP8266_Boolean                  isServer;  
 } ESP8266_ConnectionInfoTypeDef;
@@ -145,6 +146,7 @@ typedef struct
   ESP8266_EncryptionTypeDef  encryptionMode;
 } ESP8266_APConfigTypeDef;
 
+extern uint8_t Serial_Net_flag;
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
@@ -160,6 +162,9 @@ ESP8266_StatusTypeDef ESP8266_CloseConnection(const uint8_t channel_id);
 
 ESP8266_StatusTypeDef ESP8266_SendData(uint8_t* pData, uint32_t Length);
 ESP8266_StatusTypeDef ESP8266_ReceiveData(uint8_t* pData, uint32_t Length, uint32_t* retLength);
+
+ESP8266_StatusTypeDef ESP8266_Entery_Moode_One(void);
+
 
 #ifdef __cplusplus
 }

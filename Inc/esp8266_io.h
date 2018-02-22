@@ -60,9 +60,9 @@
 #define DEFAULT_TIME_OUT                 3000 /* in ms */
 
 /* WiFi module Reset pin definitions */
-#define ESP8266_RST_GPIO_PORT            GPIOG
-#define ESP8266_RST_PIN                  GPIO_PIN_14
-#define ESP8266_RST_GPIO_CLK_ENABLE()    __GPIOG_CLK_ENABLE()
+#define ESP8266_RST_GPIO_PORT            GPIOB
+#define ESP8266_RST_PIN                  GPIO_PIN_5
+#define ESP8266_RST_GPIO_CLK_ENABLE()    __GPIOB_CLK_ENABLE()
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
@@ -71,6 +71,8 @@ void ESP8266_IO_DeInit(void);
 
 int8_t ESP8266_IO_Send(uint8_t* Buffer, uint32_t Length);
 int32_t ESP8266_IO_Receive(uint8_t* Buffer, uint32_t Length);
+int32_t ESP8266_IO_Receive_Data(uint8_t* Buffer, uint32_t Length);
+
 void ESP8266_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle);
 void ESP8266_UART_ErrorCallback(UART_HandleTypeDef * UartHandle);
 
