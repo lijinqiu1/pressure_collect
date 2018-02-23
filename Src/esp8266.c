@@ -64,7 +64,6 @@ uint8_t RxBuffer[MAX_BUFFER_SIZE];
 /* Private function prototypes -----------------------------------------------*/
 static ESP8266_StatusTypeDef runAtCmd(uint8_t* cmd, uint32_t Length, const uint8_t* Token);
 static ESP8266_StatusTypeDef getData(uint8_t* Buffer, uint32_t Length, uint32_t* RetLength);
-static ESP8266_StatusTypeDef ESP8266_Leave_Mode_One(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -175,10 +174,7 @@ ESP8266_StatusTypeDef ESP8266_Restart(void)
 ESP8266_StatusTypeDef ESP8266_JoinAccessPoint(uint8_t* Ssid, uint8_t* Password)
 {
   ESP8266_StatusTypeDef Ret;
-  if (Serial_Net_flag == 1)
-  {
-    ESP8266_Leave_Mode_One();
-  }
+  
   /* List all the available Access points first
    then check whether the specified 'ssid' exists among them or not.*/
   memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
@@ -198,10 +194,6 @@ ESP8266_StatusTypeDef ESP8266_JoinAccessPoint(uint8_t* Ssid, uint8_t* Password)
 ESP8266_StatusTypeDef ESP8266_QuitAccessPoint(void)
 {
   ESP8266_StatusTypeDef Ret;
-  if (Serial_Net_flag == 1)
-  {
-    ESP8266_Leave_Mode_One();
-  }
   
   /* Construct the CWQAP command */
   memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
@@ -224,10 +216,6 @@ ESP8266_StatusTypeDef ESP8266_GetIPAddress(ESP8266_ModeTypeDef Mode, uint8_t* Ip
 {
   ESP8266_StatusTypeDef Ret = ESP8266_OK;
   char *Token, *temp;
-  if (Serial_Net_flag == 1)
-  {
-    ESP8266_Leave_Mode_One();
-  }
   
   /* Initialize the IP address and command fields */
   strcpy((char *)IpAddress, "0.0.0.0");
@@ -276,11 +264,6 @@ ESP8266_StatusTypeDef ESP8266_EstablishConnection(const ESP8266_ConnectionInfoTy
     return ESP8266_ERROR;
   }
   
-  if (Serial_Net_flag == 1)
-  {
-    ESP8266_Leave_Mode_One();
-  }
-  
   /* Construct the CIPSTART command */
   memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
   sprintf((char *)AtCmd, "AT+CIPSTART=\"TCP\",\"%s\",%s%c%c", (char *)connection_info->ipAddress, connection_info->port,'\r', '\n');
@@ -301,10 +284,6 @@ ESP8266_StatusTypeDef ESP8266_CloseConnection(const uint8_t channel_id)
 {
   /* Working with a single connection, no channel_id is required */
   ESP8266_StatusTypeDef Ret;
-  if (Serial_Net_flag == 1)
-  {
-    ESP8266_Leave_Mode_One();
-  }
 
   /* Construct the CIPCLOSE command */
   memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
@@ -401,7 +380,7 @@ ESP8266_StatusTypeDef ESP8266_Entery_Moode_One(void)
   return Ret;
 }
 
-static ESP8266_StatusTypeDef ESP8266_Leave_Mode_One(void)
+ESP8266_StatusTypeDef ESP8266_Leave_Mode_One(void)
 {
     ESP8266_StatusTypeDef Ret = ESP8266_OK;
  

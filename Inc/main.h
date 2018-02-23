@@ -102,6 +102,8 @@
 #define EVENT_SET_SYSTEM_PARAM              (uint32_t)(0x00000001 << 6)  /*设置系统参数，左右脚等*/
 #define EVENT_REQUEST_BATTERY_VALUE         (uint32_t)(0x00000001 << 7)  /*获取电池电量*/
 #define EVENT_COLLECT_PRESSURE_VALUE        (uint32_t)(0x00000001 << 8)  /*采集压力数据*/
+#define EVENT_ENTERY_SERIAL_NET             (uint32_t)(0x00000001 << 9)  /*进入透传模式*/
+#define EVENT_LEAVE_SERIAL_NET              (uint32_t)(0x00000001 <<10)  /*离开透传模式*/
 
 typedef struct System_Param
 {

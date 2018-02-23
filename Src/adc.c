@@ -45,6 +45,7 @@
 /* USER CODE BEGIN 0 */
 #include <string.h>
 #include "esp8266.h"
+#include "message.h"
 #define COLLECT_COUNT_VALUE 6
 uint8_t adc_value[32*COLLECT_COUNT_VALUE + 5];
 /* USER CODE END 0 */
@@ -129,14 +130,89 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 } 
 
 /* USER CODE BEGIN 1 */
+uint32_t Get_Battery_Value(void)
+{
+    uint32_t value
+    sConfig.Channel = ADC_CHANNEL_8;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, 50);
+    
+    if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC))
+    {
+        value = HAL_ADC_GetValue(&hadc1);
+    }
+    return value;
+}
+void Collect_Adc_Value(uint16_t *value)
+{
+    uint8_t i;
+    ADC_ChannelConfTypeDef sConfig;
+#if defined (LEFT_FOOT)
+    sConfig.Channel = ADC_CHANNEL_0;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+#else
+    sConfig.Channel = ADC_CHANNEL_1;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+    for(i = 0;i < 16;i++)
+    switch(i)
+    {
+    case 0:
+        break;
+    case 1:
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    case 5:
+        break;
+    case 6:
+        break;
+    case 7:
+        break;
+    case 8:
+        break;
+    case 9:
+        break;
+    case 10:
+        break;
+    case 11:
+        break;
+    case 12:
+        break;
+    case 13:
+        break;
+    case 14:
+        break;
+    case 15:
+        break;
+    }
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, 50);
+    
+    if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC))
+    {
+        *value = HAL_ADC_GetValue(&hadc1);
+    }
+#endif
+}
 void send_data(void)
 {
     static uint8_t collect_count = 0;
     adc_value[0] = 0xA5;
     adc_value[1] = (32*COLLECT_COUNT_VALUE)%256;
     adc_value[2] = (32*COLLECT_COUNT_VALUE)/256;
-    adc_value[3] = 0x08;
+    adc_value[3] = Message_Form_Opcode_Send_Data;
     adc_value[32*COLLECT_COUNT_VALUE+4] = 0x80;
+    
     if (g_System_Param.Collect_Rate >= 300)
     {
 	    memset(&adc_value[4]+collect_count*32,collect_count,32);

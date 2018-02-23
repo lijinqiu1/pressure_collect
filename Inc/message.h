@@ -26,6 +26,8 @@ typedef enum Message_Form_Opcode
     Message_Form_Opcode_Set_System_Param,       /*设置系统参数 左右脚区分*/
     Message_Form_Opcode_Request_Battery_Value,  /*请求电池电压*/
     Message_Form_Opcode_Send_Battery_Value,     /*发送电池电量*/
+    Message_Form_Opcode_Entery_Serial_Net,      /*进入透传模式*/
+    Message_Form_Opcode_Leave_Serial_Net,       /*离开透传模式*/
 }en_Message_Form_Opcode_t;
 
 int8_t Message_Uart_IO_Init(void);

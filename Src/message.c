@@ -61,21 +61,18 @@ static void Message_Analyse(uint8_t * Message)
     case Message_Form_Opcode_Join_Access_Point:
         strcpy((char *)g_System_Param.SSID,(char *)&Message[1]);
         strcpy((char *)g_System_Param.Password,(char *)&Message[strlen((char *)&Message[1]) + 2]);
-		//sscanf((char *)&Message[1],"%s%s",g_System_Param.SSID,g_System_Param.Password);
         g_Event_status |= EVENT_WIFI_SET_JOIN_ACCESS_POINT;
     break;
     case Message_Form_Opcode_Set_RATE:
         g_System_Param.Collect_Rate = *(uint16_t *)&Message[1];
         g_Event_status |= EVENT_SET_RATE;
     break;
-    case Message_Form_Opcode_Send_Data:
-    break;
-    case Message_Form_Opcode_Set_System_Param:
-        g_System_Param.Which_foot = Message[1];
-        g_Event_status |= EVENT_SET_SYSTEM_PARAM;
-    break;
     case Message_Form_Opcode_Request_Battery_Value:
         g_Event_status |= EVENT_REQUEST_BATTERY_VALUE;
+    break;
+    case Message_Form_Opcode_Entery_Serial_Net:
+    break;
+    case Message_Form_Opcode_Leave_Serial_Net:
     break;
     }
 

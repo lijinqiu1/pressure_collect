@@ -84,7 +84,8 @@ int main(void)
   ESP8266_StatusTypeDef Status = ESP8266_OK; 
 
   /* USER CODE END 1 */
-
+  uint32_t last_tick;
+  uint32_t battery_value;
   /* MCU Configuration----------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -110,6 +111,7 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
+  HAL_ADCEx_Calibration_Start(&hadc1);
   Status = ESP8266_Init();
   if (Status != ESP8266_OK)
   {
@@ -131,19 +133,19 @@ int main(void)
     if ((g_Event_status & EVENT_COLLECT_PRESSURE_VALUE)!=0)
     {
 		send_data();
-     g_Event_status &= ~EVENT_COLLECT_PRESSURE_VALUE; 
+        g_Event_status &= ~EVENT_COLLECT_PRESSURE_VALUE; 
     }
     /*开始工作*/
     if ((g_Event_status & EVENT_WORK_BEGIN)!= 0)
     {
-     HAL_TIM_Base_Start_IT(&htim1);
-     g_Event_status &= ~EVENT_WORK_BEGIN;
+        HAL_TIM_Base_Start_IT(&htim1);
+        g_Event_status &= ~EVENT_WORK_BEGIN;
     }
     /*停止工作*/
     if ((g_Event_status & EVENT_WORK_END)!= 0)
     {
-      HAL_TIM_Base_Stop(&htim1);
-      g_Event_status &= ~EVENT_WORK_END;
+        HAL_TIM_Base_Stop(&htim1);
+        g_Event_status &= ~EVENT_WORK_END;
     }
     /*设置tcp连接*/
     if ((g_Event_status & EVENT_WIFI_SET_TCP_CONNECT)!= 0)
@@ -157,11 +159,7 @@ int main(void)
         Status = ESP8266_EstablishConnection(&ConnectionInfo);
         if (Status == ESP8266_OK)
         {//连接成功
-            Status = ESP8266_Entery_Moode_One();
-            if (Status == ESP8266_OK)
-            {
-
-            }
+        
         }
         else
         {//连接失败
@@ -183,6 +181,22 @@ int main(void)
         }
       g_Event_status &= ~EVENT_WIFI_SET_JOIN_ACCESS_POINT;
     }
+    /*进入透传模式*/
+    if((g_Event_status & EVENT_ENTERY_SERIAL_NET) != 0)
+    {
+        Status = ESP8266_Entery_Moode_One();
+        if (Status != ESP8266_OK)
+        {
+            ESP8266_Entery_Moode_One();
+        }
+        g_Event_status &= ~EVENT_ENTERY_SERIAL_NET;
+    }
+    /*离开透传模式*/
+    if((g_Event_status & EVENT_LEAVE_SERIAL_NET) != 0)
+    {
+        ESP8266_Leave_Mode_One();
+        g_Event_status &= ~EVENT_LEAVE_SERIAL_NET;
+    }
     /*查询本地IP*/
     if ((g_Event_status & EVENT_WIFI_GET_LOCAL_IP)!= 0)
     {
@@ -194,11 +208,6 @@ int main(void)
       htim1.Init.Period = PRESSURE_COLLECT_RATE_HZ(g_System_Param.Collect_Rate);
       HAL_TIM_Base_Init(&htim1);
       g_Event_status &= ~EVENT_SET_RATE;
-    }
-    /*设置系统参数*/
-    if ((g_Event_status & EVENT_SET_SYSTEM_PARAM)!= 0)
-    {
-     g_Event_status &= ~EVENT_SET_SYSTEM_PARAM;
     }
     /*请求电池电量*/
     if ((g_Event_status & EVENT_REQUEST_BATTERY_VALUE)!= 0)
@@ -213,6 +222,10 @@ int main(void)
     {
         /*透传模式下处理WIFI数据*/
         Message_Process_Wifi();
+    }
+    if ((HAL_GetTick() - last_tick)> 30000)
+    {
+        battery_value = Get_Battery_Value();
     }
   }
   /* USER CODE END 3 */
