@@ -166,7 +166,7 @@ ESP8266_StatusTypeDef ESP8266_ReceiveData(uint8_t* pData, uint32_t Length, uint3
 ESP8266_StatusTypeDef ESP8266_Entery_Moode_One(void);
 ESP8266_StatusTypeDef ESP8266_Leave_Mode_One(void);
 
-
+ESP8266_StatusTypeDef ESP8266_SetBaud(uint32_t  Baud);
 #ifdef __cplusplus
 }
 #endif

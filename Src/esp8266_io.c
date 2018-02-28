@@ -89,8 +89,14 @@ int8_t ESP8266_IO_Init(void)
   WiFiRxBuffer.tail = 0;
  
   /* Set the RST IO high */
-  HAL_GPIO_WritePin(WIFI_RST_GPIO_Port, WIFI_RES_Pin, GPIO_PIN_SET);
-  
+  HAL_GPIO_WritePin(WIFI_RES_GPIO_Port,WIFI_RES_Pin,GPIO_PIN_SET);
+  HAL_GPIO_WritePin(WIFI_EN_GPIO_Port,WIFI_EN_Pin,GPIO_PIN_SET);
+  HAL_GPIO_WritePin(WIFI_RST_GPIO_Port,WIFI_RST_Pin,GPIO_PIN_RESET);
+  HAL_Delay(10);
+  HAL_GPIO_WritePin(WIFI_RST_GPIO_Port, WIFI_RST_Pin, GPIO_PIN_SET);
+	
+  HAL_Delay(3000);
+
   HAL_UART_Receive_IT(&WiFiUartHandle, (uint8_t *)&WiFiRxBuffer.data[WiFiRxBuffer.tail], 1);
 
   return 0;
@@ -225,11 +231,11 @@ void ESP8266_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
   */
 static void WIFI_Handler(void)
 {
-  HAL_UART_DeInit(&WiFiUartHandle);
+//  HAL_UART_DeInit(&WiFiUartHandle);
   
-  while(1)
-  {
-  }
+//  while(1)
+//  {
+//  }
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

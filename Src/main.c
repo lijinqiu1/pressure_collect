@@ -82,10 +82,10 @@ int main(void)
   /* USER CODE BEGIN 1 */
   ESP8266_ConnectionInfoTypeDef ConnectionInfo;
   ESP8266_StatusTypeDef Status = ESP8266_OK; 
-
-  /* USER CODE END 1 */
   uint32_t last_tick;
   uint32_t battery_value;
+  /* USER CODE END 1 */
+
   /* MCU Configuration----------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -118,6 +118,11 @@ int main(void)
     _Error_Handler("esp8266 init failed!",Status);
   }
 
+//  Status = ESP8266_SetBaud(921600);
+//  if (Status != ESP8266_OK)
+//  {
+//    _Error_Handler("esp8266 init failed!",Status);
+//  }
   Message_Uart_IO_Init();
   /* USER CODE END 2 */
 
@@ -243,13 +248,12 @@ void SystemClock_Config(void)
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);

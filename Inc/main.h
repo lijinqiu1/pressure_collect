@@ -47,8 +47,8 @@
 
 /* Private define ------------------------------------------------------------*/
 
-#define WIFI_RST_Pin GPIO_PIN_4
-#define WIFI_RST_GPIO_Port GPIOA
+#define WIFI_RST_Pin GPIO_PIN_5
+#define WIFI_RST_GPIO_Port GPIOB
 #define WIFI_EN_Pin GPIO_PIN_5
 #define WIFI_EN_GPIO_Port GPIOA
 #define WIFI_RES_Pin GPIO_PIN_6

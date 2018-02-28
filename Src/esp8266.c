@@ -91,7 +91,6 @@ ESP8266_StatusTypeDef ESP8266_Init(void)
   /* Construct the command */
   memset (AtCmd, '\0', MAX_AT_CMD_SIZE);
   sprintf((char *)AtCmd, "ATE0%c%c", '\r', '\n');
-  
   /* Send the command */
   Ret = runAtCmd(AtCmd, strlen((char *)AtCmd), (uint8_t*)AT_OK_STRING);
     
@@ -293,6 +292,22 @@ ESP8266_StatusTypeDef ESP8266_CloseConnection(const uint8_t channel_id)
   Ret = runAtCmd(AtCmd, strlen((char *)AtCmd), (uint8_t*)AT_OK_STRING);
   
   return Ret;
+}
+
+ESP8266_StatusTypeDef ESP8266_SetBaud(uint32_t  Baud)
+{
+    /* Working with a single connection, no channel_id is required */
+    ESP8266_StatusTypeDef Ret;
+
+    /* Construct the CIPCLOSE command */
+    memset(AtCmd, '\0', MAX_AT_CMD_SIZE);
+    sprintf((char *)AtCmd, "AT+UART_DEF=%d,8,1,0,0%c%c",Baud,'\r', '\n');
+    
+    /* Send the CIPSTART command */  
+    Ret = runAtCmd(AtCmd, strlen((char *)AtCmd), (uint8_t*)AT_OK_STRING);
+
+    return Ret;
+
 }
 
 /**
