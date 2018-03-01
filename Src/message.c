@@ -71,8 +71,10 @@ static void Message_Analyse(uint8_t * Message)
         g_Event_status |= EVENT_REQUEST_BATTERY_VALUE;
     break;
     case Message_Form_Opcode_Entery_Serial_Net:
+        g_Event_status |= EVENT_ENTERY_SERIAL_NET;
     break;
     case Message_Form_Opcode_Leave_Serial_Net:
+        g_Event_status |= EVENT_LEAVE_SERIAL_NET;
     break;
     }
 

@@ -96,6 +96,8 @@ int8_t ESP8266_IO_Init(void)
   HAL_GPIO_WritePin(WIFI_RST_GPIO_Port, WIFI_RST_Pin, GPIO_PIN_SET);
 	
   HAL_Delay(3000);
+	
+  MX_USART2_UART_Init();
 
   HAL_UART_Receive_IT(&WiFiUartHandle, (uint8_t *)&WiFiRxBuffer.data[WiFiRxBuffer.tail], 1);
 

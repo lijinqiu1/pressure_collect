@@ -84,6 +84,8 @@
 /* #define USE_FULL_ASSERT    1U */
 
 /* USER CODE BEGIN Private defines */
+//#define LEFT_FOOT
+
 #define WIFI_SSID       "AndroidAP"
 #define WIFI_PASSWORD   "welcome0"
 #define HOST_ADDRESS    "192.168.43.1"
